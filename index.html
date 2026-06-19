@@ -382,10 +382,29 @@
             display: none;
         }
 
+        footer {
+            margin-top: 40px;
+            background: #ffffff;
+            padding: 30px;
+            border-radius: 16px;
+            border: 1px solid var(--border-color);
+            box-shadow: var(--item-shadow);
+        }
+        footer strong p {
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+            color: #4b5563;
+            line-height: 1.5;
+        }
+
         @media print {
             @page {
                 size: A4 landscape;
                 margin: 0mm !important; 
+            }
+            
+            body > *:not(.modal), header, .nav-tabs, .tab-content, footer, .no-print { 
+                display: none !important; 
             }
             
             body {
