@@ -1,0 +1,1226 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phần mềm Tổng hợp Mã HS Code và Tính Thuế Xuất Nhập Khẩu</title>
+    <style>
+        :root {
+            /* GIỮ NGUYÊN TOÀN BỘ MÀU SẮC GỐC CỦA HS 3 */
+            --primary-color: #3498db; 
+            --primary-hover: #2980b9; 
+            --secondary-color: #fcf8e3; 
+            --border-color: #bcdff5; 
+            --text-color: #2c3e50;
+
+            /* TÍCH HỢP HIỆU ỨNG ĐỔ BÓNG VÀ CHUYỂN ĐỘNG TỪ INDEX */
+            --main-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
+            --item-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+            --transition-smooth: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+
+        body {
+            /* ĐỒNG BỘ PHÔNG CHỮ CAO CẤP VÀ HIỆN ĐẠI TỪ INDEX.HTML */
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            margin: 20px;
+            background-color: #f0f7fc; 
+            padding-bottom: 60px; 
+        }
+
+        h2, h3 {
+            color: var(--primary-hover);
+            text-align: left;
+        }
+
+        /* Khung banner trên cùng theo ảnh mẫu */
+        .header-banner {
+            background-color: var(--secondary-color); 
+            padding: 24px 30px;
+            border-radius: 16px; 
+            margin-bottom: 20px;
+            border: 1px solid #fbeed5; 
+            box-shadow: var(--main-shadow); 
+            transition: var(--transition-smooth);
+            
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-left-block {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .header-logo-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 75px;
+        }
+
+        .header-logo-container img {
+            height: 100%;
+            width: auto;
+            object-fit: contain;
+        }
+
+        .header-text-block {
+            text-align: left; 
+        }
+
+        .header-banner h2 {
+            margin: 0;
+            font-weight: 800;
+            font-size: 1.6rem;
+            letter-spacing: -0.02em;
+            color: var(--primary-hover); 
+        }
+
+        .header-banner p {
+            margin: 4px 0 0 0;
+            font-size: 0.85rem;
+            opacity: 0.9;
+            font-weight: 600;
+            letter-spacing: 0.02em;
+            color: var(--text-color);
+        }
+
+        .header-banner .version {
+            font-size: 0.85rem;
+            font-weight: 700;
+            background: rgba(52, 152, 219, 0.15); 
+            color: var(--primary-hover);
+            padding: 8px 16px;
+            border-radius: 8px;
+            white-space: nowrap;
+        }
+
+        /* Tabs Styling */
+        .tab-container {
+            display: flex;
+            margin-bottom: 20px;
+            border-bottom: 2px solid var(--primary-color);
+            width: 100%;
+        }
+
+        .tab-button {
+            flex: 1; 
+            text-align: center;
+            padding: 12px 20px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            background: #e1f0fa; 
+            border: 1px solid var(--border-color);
+            border-bottom: none;
+            border-top-left-radius: 12px; 
+            border-top-right-radius: 12px;
+            color: var(--primary-hover);
+            position: relative;
+            top: 0;
+            transition: var(--transition-smooth);
+        }
+
+        .tab-button:not(:last-child) {
+            margin-right: 5px;
+        }
+
+        .tab-button:hover {
+            background-color: #d1d8e0;
+            top: -2px;
+        }
+
+        .tab-button.active {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+            box-shadow: var(--item-shadow);
+            top: 0; 
+        }
+
+        .tab-content {
+            display: none;
+            background: white;
+            padding: 20px;
+            border-radius: 0 0 16px 16px; 
+            box-shadow: var(--main-shadow); 
+            position: relative;
+            width: calc(100% - 40px);
+            margin: 0 auto;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeInTab 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+
+        @keyframes fadeInTab {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .lookup-section {
+            background: var(--secondary-color); 
+            padding: 15px;
+            border-radius: 10px; 
+            margin-bottom: 20px;
+            border-left: 5px solid #f1c40f; 
+            border-top: 1px solid #fbeed5;
+            border-right: 1px solid #fbeed5;
+            border-bottom: 1px solid #fbeed5;
+            box-shadow: var(--item-shadow);
+            transition: var(--transition-smooth);
+        }
+
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            font-weight: bold;
+            margin-bottom: 5px;
+            font-size: 14px;
+            color: #34495e;
+        }
+
+        input, select {
+            padding: 8px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px; 
+            font-size: 14px;
+            background-color: #fafdfb;
+            outline: none;
+            transition: var(--transition-smooth);
+        }
+        
+        input:focus, select:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 4px rgba(52, 152, 219, 0.15); 
+        }
+
+        .tax-section {
+            border: 1px solid var(--border-color);
+            padding: 15px;
+            border-radius: 10px; 
+            background: #f7fbfe; 
+            margin-bottom: 15px;
+            box-shadow: var(--item-shadow);
+            transition: var(--transition-smooth);
+        }
+
+        .tax-title {
+            font-weight: bold;
+            color: var(--primary-hover);
+            margin-bottom: 10px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 5px;
+            text-transform: uppercase;
+            font-size: 13px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px; 
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 15px;
+            margin-right: 10px;
+            box-shadow: var(--item-shadow);
+            position: relative;
+            top: 0;
+            transition: var(--transition-smooth);
+        }
+
+        .btn:hover:not(:disabled) {
+            transform: translateY(-2px); 
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+        }
+
+        .btn:active:not(:disabled) {
+            transform: translateY(1px);
+            box-shadow: var(--item-shadow);
+        }
+
+        .btn-primary { background-color: var(--primary-color); color: white; }
+        .btn-primary:hover { background-color: var(--primary-hover); }
+        .btn-secondary { background-color: #5ba4e5; color: white; }
+        .btn-secondary:hover { background-color: #348edb; }
+        .btn-print { background-color: #f39c12; color: white; padding: 5px 10px; font-size: 12px; border-radius: 5px; }
+        .btn-print:hover { background-color: #d35400; }
+        .btn-calc { background-color: #34495e; color: white; }
+        .btn-calc:hover { background-color: #2c3e50; }
+        .btn-danger { background-color: #e74c3c; color: white; padding: 5px 10px; font-size: 12px; border-radius: 5px; }
+        .btn-danger:hover { background-color: #c0392b; }
+
+        .table-container {
+            overflow-x: auto;
+            margin-top: 20px;
+            width: 100%;
+            border-radius: 10px; 
+            box-shadow: var(--item-shadow);
+            transition: var(--transition-smooth);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        th, td {
+            border: 1px solid var(--border-color);
+            padding: 10px;
+            text-align: center;
+            transition: var(--transition-smooth);
+        }
+
+        tbody tr:hover {
+            background-color: rgba(52, 152, 219, 0.03);
+        }
+
+        th {
+            background-color: #e6f2fa !important;
+            color: var(--primary-hover);
+            font-weight: bold;
+        }
+
+        th.tax-header-cell, td.tax-cell {
+            white-space: nowrap !important;
+            min-width: 55px;
+        }
+
+        .input-table {
+            width: 90%;
+            padding: 5px;
+            font-size: 13px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px; 
+            text-align: center;
+            outline: none;
+            transition: var(--transition-smooth);
+        }
+        .input-table:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.15);
+        }
+
+        .summary-box {
+            margin-top: 25px;
+            padding: 15px;
+            background-color: var(--secondary-color); 
+            border-left: 5px solid #f1c40f;
+            border-radius: 12px; 
+            border-top: 1px solid #fbeed5;
+            border-right: 1px solid #fbeed5;
+            border-bottom: 1px solid #fbeed5;
+            width: calc(100% - 32px);
+            text-align: left;
+            box-shadow: var(--main-shadow); 
+            position: relative;
+            top: 0;
+            transition: var(--transition-smooth);
+        }
+
+        .summary-box:hover {
+            transform: translateY(-3px); 
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.08);
+        }
+
+        .summary-title {
+            font-weight: bold;
+            font-size: 16px;
+            color: #b78a00;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+        }
+
+        .summary-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: #fff;
+            margin-top: 5px;
+        }
+        .summary-table td {
+            padding: 10px 15px;
+            border: 1px solid #fbeed5;
+            font-size: 14px;
+            font-weight: bold;
+            text-align: left;
+        }
+        .summary-table tr.total-row td {
+            background-color: #fff9e6;
+            border-top: 2px solid #f1c40f;
+            font-size: 16px;
+            padding: 12px 15px;
+        }
+
+        .software-footer {
+            margin-top: 40px;
+            padding-top: 10px;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-style: italic;
+            color: #7f8c8d;
+            font-size: 13px;
+            font-weight: bold;
+        }
+
+        .print-header-tab2, .print-footer-tab2, .print-header-tab3, .print-footer-tab3 {
+            display: none;
+        }
+
+        @media print {
+            @page {
+                size: A4 landscape;
+                margin: 0mm !important; 
+            }
+            
+            body {
+                background-color: #fff;
+                padding: 5mm 8mm 5mm 8mm !important; 
+                font-family: Arial, sans-serif !important;
+                font-size: 11px !important;
+                line-height: 1.2 !important; 
+            }
+
+            .no-print, .tab-container, .lookup-section, #logisticsForm, .btn, td button, .software-footer {
+                display: none !important;
+            }
+
+            #tab1Table th:nth-child(17), #tab1Table td:nth-child(17),
+            #tab2Table tr th:nth-child(12), #tab2Table tr td:nth-child(16),
+            #tab3Table th:nth-child(12), #tab3Table td:nth-child(12) {
+                display: none !important;
+            }
+
+            #tab3Table input, #tab3Table select {
+                border: none !important;
+                background: transparent !important;
+                appearance: none !important;
+                -webkit-appearance: none !important;
+                color: #000 !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                width: 100% !important;
+                text-align: center !important;
+                pointer-events: none !important;
+                font-size: 11px !important;
+            }
+
+            .tab-content {
+                display: none !important;
+                box-shadow: none !important;
+                transform: none !important;
+                animation: none !important;
+            }
+
+            .tab-content.print-active-section {
+                display: block !important;
+                padding: 0 !important;
+                width: 100% !important;
+            }
+
+            #tab2.print-active-section .print-header-tab2,
+            #tab2.print-active-section .print-footer-tab2,
+            #tab3.print-active-section .print-header-tab3,
+            #tab3.print-active-section .print-footer-tab3 {
+                display: block !important;
+            }
+
+            table {
+                width: 100% !important;
+                border-collapse: collapse !important;
+                margin-top: 8px !important; 
+            }
+
+            th, td {
+                border: 1px solid #000 !important;
+                padding: 5mm 3px !important; 
+                color: #000 !important;
+                word-break: keep-all !important;
+                text-align: center !important;
+            }
+
+            #tab3Table th:nth-child(10), #tab3Table td:nth-child(10) { min-width: 75px !important; }
+            #tab3Table th:nth-child(11), #tab3Table td:nth-child(11) { min-width: 110px !important; }
+
+            th {
+                background-color: #eaeaea !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+                font-weight: bold !important;
+            }
+            
+            .summary-box {
+                background-color: #fff !important;
+                border: 1px solid #000 !important;
+                margin-top: 10px !important; 
+                padding: 8px !important; 
+                width: 100% !important;
+                box-shadow: none !important;
+                transform: none !important;
+            }
+
+            .summary-table, .summary-table td {
+                border: 1px solid #000 !important;
+            }
+
+            .summary-table tr.total-row td {
+                background-color: #fff !important;
+            }
+
+            #tab3Table {
+                width: 100% !important;
+                font-size: 15px;
+            }
+
+            #tab3Table th:nth-child(1) { width: 4%; }   
+            #tab3Table th:nth-child(2) { width: 14%; }  
+            #tab3Table th:nth-child(3) { width: 9%; }   
+            #tab3Table th:nth-child(4) { width: 15%; }  
+            #tab3Table th:nth-child(5) { width: 9%; }   
+            #tab3Table th:nth-child(6) { width: 7%; }   
+            #tab3Table th:nth-child(7) { width: 7%; }   
+            #tab3Table th:nth-child(8) { width: 5%; }   
+            #tab3Table th:nth-child(9) { width: 8%; }   
+            #tab3Table th:nth-child(10) { width: 11%; } 
+            #tab3Table th:nth-child(11) { width: 11%; } 
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header-banner no-print">
+        <div class="header-left-block">
+            <div class="header-logo-container">
+                <img src="nkd.png" alt="NKD Logo">
+            </div>
+            <div class="header-text-block">
+                <h2>PHẦN MỀM TỔNG HỢP MÃ HS CODE VÀ THUẾ SUẤT</h2>
+                <p>Dành cho giảng dạy và thực hành chuyên ngành Logistics</p>
+            </div>
+        </div>
+        <div class="version">Phiên bản đào tạo thực hành</div>
+    </div>
+
+    <div class="tab-container no-print">
+        <button class="tab-button active" onclick="openTab(event, 'tab1')">Tab 1: Thông tin nhập liệu</button>
+        <button class="tab-button" onclick="openTab(event, 'tab2')" id="btnTab2">Tab 2: Tổng hợp báo cáo</button>
+        <button class="tab-button" onclick="openTab(event, 'tab3')" id="btnTab3">Tab 3: Tính thuế</button>
+    </div>
+
+    <!-- TAB 1 -->
+    <div id="tab1" class="tab-content active print-active-section">
+        <div class="lookup-section no-print">
+            <h4 style="margin-top: 0; color: #b78a00;">Hệ thống tra cứu dữ liệu hỗ trợ:</h4>
+            <div style="display: flex; gap: 20px; flex-wrap: wrap; justify-content: left;">
+                <div>
+                    <label>1. Tra cứu trực tuyến: </label>
+                    <a href="https://vntr.moit.gov.vn/vi" target="_blank" class="btn btn-secondary" style="text-decoration: none; display: inline-block; font-size: 13px; padding: 6px 12px;">Cổng thông tin Thương mại VN (VNTR)</a>
+                </div>
+                <div>
+                    <label>2. File Excel bài giảng (Google Drive): </label>
+                    <input type="text" id="excelLink" placeholder="Dán link file Excel Google Drive tại đây..." style="width: 300px; padding: 5px;">
+                    <button type="button" class="btn btn-secondary" style="padding: 5px 10px; font-size: 13px;" onclick="openExcel()">Mở File Excel</button>
+                </div>
+            </div>
+        </div>
+
+        <form id="logisticsForm" class="no-print">
+            <div class="grid-container">
+                <div class="form-group">
+                    <label for="svName">Họ và tên SV <span style="color:red">*</span></label>
+                    <input type="text" id="svName" required>
+                </div>
+                <div class="form-group">
+                    <label for="svId">Mã số SV <span style="color:red">*</span></label>
+                    <input type="text" id="svId" required>
+                </div>
+                <div class="form-group">
+                    <label for="prodInter">Tên sản phẩm quốc tế</label>
+                    <input type="text" id="prodInter">
+                </div>
+                <div class="form-group">
+                    <label for="prodVN">Tên sản phẩm Việt Nam <span style="color:red">*</span></label>
+                    <input type="text" id="prodVN" required>
+                </div>
+                <div class="form-group">
+                    <label for="origin">Xuất xứ</label>
+                    <input type="text" id="origin">
+                </div>
+                <div class="form-group">
+                    <label for="hsCode">Mã HS code <span style="color:red">*</span></label>
+                    <input type="text" id="hsCode" required>
+                </div>
+                <div class="form-group">
+                    <label for="coForm">Form C/O</label>
+                    <select id="coForm" onchange="toggleCoTypeView()">
+                        <option value="Có Form C/O">Có Form C/O</option>
+                        <option value="Có FTA nhưng không có Form C/O">Có FTA nhưng không có Form C/O</option>
+                        <option value="Thông thường">Thông thường</option>
+                    </select>
+                </div>
+                <div class="form-group" id="coTypeGroup">
+                    <label for="coType">Loại form C/O</label>
+                    <select id="coType">
+                        <option value="Form D - ATIGA (ASEAN)">Form D - ATIGA (ASEAN)</option>
+                        <option value="Form E - ACFTA (ASEAN – Trung Quốc)">Form E - ACFTA (ASEAN – Trung Quốc)</option>
+                        <option value="Form AJ - AJCEP (ASEAN – Nhật Bản)">Form AJ - AJCEP (ASEAN – Nhật Bản)</option>
+                        <option value="Form AK - AKFTA (ASEAN – Hàn Quốc)">Form AK - AKFTA (ASEAN – Hàn Quốc)</option>
+                        <option value="CPTPP - Hiệp định CPTPP">CPTPP - Hiệp định CPTPP</option>
+                        <option value="EUR.1 - EVFTA (Việt Nam – EU)">EUR.1 - EVFTA (Việt Nam – EU)</option>
+                        <option value="RCEP - Hiệp định RCEP">RCEP - Hiệp định RCEP</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="inspection">Danh mục kiểm tra</label>
+                    <select id="inspection">
+                        <option value="Không thuộc danh mục">-- Không thuộc danh mục --</option>
+                        <option value="Kiểm dịch an toàn thực phẩm">Kiểm dịch an toàn thực phẩm</option>
+                        <option value="Kiểm định an toàn">Kiểm định an toàn</option>
+                        <option value="Quy định khác">Quy định khác</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="tax-section">
+                <div class="tax-title">DÒNG THUẾ SUẤT NHẬP KHẨU (%)</div>
+                <div class="grid-container" style="margin-bottom: 0;">
+                    <div class="form-group"><label>Thuế nhập khẩu</label><input type="number" id="taxNK" step="0.01" value="0"></div>
+                    <div class="form-group"><label>Thuế TTBĐ</label><input type="number" id="taxTTDB" step="0.01" value="0"></div>
+                    <div class="form-group"><label>Thuế BVMT (đ/ĐV)</label><input type="number" id="taxBVMT" step="1" value="0"></div>
+                    <div class="form-group"><label>Thuế GTGT</label><input type="number" id="taxGTGT_NK" step="0.01" value="0"></div>
+                    <div class="form-group"><label>Thuế Khác</label><input type="number" id="taxKhac" step="0.01" value="0"></div>
+                </div>
+            </div>
+
+            <div class="tax-section">
+                <div class="tax-title">DÒNG THUẾ SUẤT XUẤT KHẨU (%)</div>
+                <div class="grid-container" style="margin-bottom: 0; grid-template-columns: repeat(2, 1fr);">
+                    <div class="form-group"><label>Thuế xuất khẩu</label><input type="number" id="taxXK" step="0.01" value="0"></div>
+                    <div class="form-group"><label>Thuế GTGT</label><input type="number" id="taxGTGT_XK" step="0.01" value="0"></div>
+                </div>
+            </div>
+
+            <div style="margin-top: 20px; text-align: center;">
+                <button type="button" class="btn btn-primary" onclick="addDataRow()">Ghi thông tin sản phẩm</button>
+                <button type="button" class="btn btn-secondary" style="background-color: #f1c40f; color: #2c3e50;" onclick="generateReport()">Lập báo cáo tổng hợp</button>
+            </div>
+        </form>
+
+        <hr class="no-print" style="margin: 30px 0; border: 0; border-top: 1px dashed var(--border-color);">
+
+        <h3 class="no-print">DANH SÁCH SẢN PHẨM ĐÃ GHI NHẬN (TAB 1)</h3>
+        <div class="table-container">
+            <table id="tab1Table">
+                <thead>
+                    <tr>
+                        <th rowspan="2">STT</th>
+                        <th rowspan="2">Họ tên SV</th>
+                        <th rowspan="2">Mã số SV</th>
+                        <th rowspan="2">Tên SP Quốc tế</th>
+                        <th rowspan="2">Tên SP Việt Nam</th>
+                        <th rowspan="2">Xuất xứ</th>
+                        <th rowspan="2">Mã HS Code</th>
+                        <th rowspan="2">Form C/O</th>
+                        <th colspan="4">Thuế Nhập khẩu</th>
+                        <th colspan="2">Thuế Xuất khẩu</th>
+                        <th rowspan="2">Thuế Khác (%)</th>
+                        <th rowspan="2">Danh mục kiểm tra</th>
+                        <th rowspan="2" class="no-print">Thao tác</th>
+                    </tr>
+                    <tr>
+                        <th class="tax-header-cell">NK (%)</th>
+                        <th class="tax-header-cell">TTBĐ (%)</th>
+                        <th class="tax-header-cell">BVMT (đ)</th>
+                        <th class="tax-header-cell">GTGT (%)</th>
+                        <th class="tax-header-cell">XK (%)</th>
+                        <th class="tax-header-cell">GTGT (%)</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+
+        <div class="software-footer">
+            Phần mềm do GV Nguyễn Khánh Dương phát triển - Phục vụ giảng dạy & học tập
+        </div>
+    </div>
+
+    <!-- TAB 2 -->
+    <div id="tab2" class="tab-content">
+        <div class="print-header-tab2">
+            <h3>BÁO CÁO TỔNG HỢP HS CODE VÀ THUẾ SUẤT CỦA HÀNG HOÁ</h3>
+            <p style="text-align: center;">Chuyên ngành đào tạo: Thương mại quốc tế & Logistics</p>
+            <p style="font-weight: bold; text-align: center;" id="reportStudentMeta">Sinh viên thực hiện: .........................</p>
+            <hr style="border: 0; border-top: 2px solid #000; width: 200px; margin: 10px auto;">
+        </div>
+
+        <div style="display: flex; justify-content: center; gap: 10px; margin-bottom: 15px;" class="no-print">
+            <button class="btn btn-calc" style="padding: 12px 25px; background-color: var(--primary-color);" onclick="goToTaxTab()">Tính thuế -> Chuyển Tab 3</button>
+            <button class="btn btn-primary" style="background-color: #f1c40f; color: #2c3e50; padding: 12px 25px;" onclick="printFullReport()">In toàn bộ báo cáo (Xuất PDF)</button>
+        </div>
+        
+        <div class="table-container">
+            <table id="tab2Table">
+                <thead>
+                    <tr>
+                        <th rowspan="2">STT</th>
+                        <th rowspan="2">Họ tên SV</th>
+                        <th rowspan="2">Mã số SV</th>
+                        <th rowspan="2">Tên SP Quốc tế</th>
+                        <th rowspan="2">Tên SP Việt Nam</th>
+                        <th rowspan="2">Xuất xứ</th>
+                        <th rowspan="2">Mã HS Code</th>
+                        <th rowspan="2">Form C/O</th>
+                        <th colspan="4">Thuế NK</th>
+                        <th colspan="2">Thuế XK</th>
+                        <th rowspan="2">Thuế Khác (%)</th>
+                        <th rowspan="2">Kiểm tra chuyên ngành</th>
+                    </tr>
+                    <tr>
+                        <th class="tax-header-cell">NK (%)</th>
+                        <th class="tax-header-cell">TTBĐ (%)</th>
+                        <th class="tax-header-cell">BVMT (đ)</th>
+                        <th class="tax-header-cell">GTGT (%)</th>
+                        <th class="tax-header-cell">XK (%)</th>
+                        <th class="tax-header-cell">GTGT (%)</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+
+        <div class="print-footer-tab2" style="font-style: italic; margin-top: 30px;">
+            <table style="border:none !important; width:100%; margin-top:20px;">
+                <tr style="border:none !important;">
+                    <td style="border:none !important; width:65%;"></td>
+                    <td style="border:none !important; text-align: center;">
+                        <p>Ngày..... tháng..... năm 2026</p>
+                        <p style="font-weight: bold; margin-bottom: 65px;">Người lập bảng<br><small>(Sinh viên ký và ghi rõ họ tên)</small></p>
+                        <p style="font-weight: bold; font-style: normal; text-decoration: underline;" id="reportStudentSignature">.......................................</p>
+                    </td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="software-footer">
+            Phần mềm do GV Nguyễn Khánh Dương phát triển - Phục vụ giảng dạy & học tập
+        </div>
+    </div>
+
+    <!-- TAB 3 -->
+    <div id="tab3" class="tab-content">
+        <div class="print-header-tab3">
+            <h3>BẢNG TÍNH THUẾ HÀNG HOÁ XUẤT NHẬP KHẨU</h3>
+            <p style="text-align: center;">Hệ thống định biên thực hành Hải quan & Logistics</p>
+            <p style="font-weight: bold; text-align: center;" id="taxStudentMeta">Sinh viên thực hiện: .........................</p>
+            <hr style="border: 0; border-top: 2px solid #000; width: 200px; margin: 10px auto;">
+        </div>
+
+        <div style="display: flex; justify-content: right; gap: 10px; margin-bottom: 15px;" class="no-print">
+            <button class="btn btn-primary" style="background-color: #f1c40f; color:#212529; padding: 12px 25px;" onclick="printTaxTable()">In bảng tính thuế (Xuất PDF)</button>
+        </div>
+
+        <div class="table-container">
+            <table id="tab3Table">
+                <thead>
+                    <tr>
+                        <th style="width: 3%;">STT</th>
+                        <th style="width: 15%;">Tên hàng hóa</th>
+                        <th style="width: 8%;">Mã HS Code</th>
+                        <th style="width: 14%;">Form C/O</th>
+                        <th style="width: 9%;">Loại hình</th>
+                        <th style="width: 5%;">Số lượng</th>
+                        <th style="width: 5%;">Đơn giá</th>
+                        <th style="width: 5%;">Tiền Tệ</th>
+                        <th style="width: 5%;">Tỷ giá</th>
+                        <th style="width: 15%;">Thuế suất</th>
+                        <th style="width: 18%;">Tiền thuế (VND)</th>
+                        <th class="no-print" style="width: 7%;">Hành động</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+
+        <div class="summary-box">
+            <div class="summary-title">📊 Tổng hợp các loại thuế phải nộp toàn biểu báo cáo:</div>
+            <table class="summary-table">
+                <tr>
+                    <td style="color: #27ae60; width: 50%;">1. Tổng Thuế Nhập Khẩu:</td>
+                    <td><span id="sumNK">0</span> đ</td>
+                </tr>
+                <tr>
+                    <td style="color: #2980b9;">2. Tổng Thuế Tiêu Thụ Đặc Biệt:</td>
+                    <td><span id="sumTTDB">0</span> đ</td>
+                </tr>
+                <tr>
+                    <td style="color: #8e44ad;">3. Tổng Thuế Bảo Vệ Môi Trường:</td>
+                    <td><span id="sumBVMT">0</span> đ</td>
+                </tr>
+                <tr>
+                    <td style="color: #d35400;">4. Tổng Thuế Giá Trị Gia Tăng (NK):</td>
+                    <td><span id="sumGTGT">0</span> đ</td>
+                </tr>
+                <tr>
+                    <td style="color: #c0392b;">5. Tổng Thuế Xuất Khẩu:</td>
+                    <td><span id="sumXK">0</span> đ</td>
+                </tr>
+                <tr class="total-row">
+                    <td style="color: #e74c3c;">🔥 TỔNG NGHĨA VỤ THUẾ PHẢI NỘP NGÂN SÁCH:</td>
+                    <td style="color: #e74c3c; font-size: 18px;"><span id="sumTotal">0</span> đ</td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="print-footer-tab3" style="font-style: italic;">
+            <table style="border:none !important; width:100%; margin-top:25px;">
+                <tr style="border:none !important;">
+                    <td style="border:none !important; width:65%;"></td>
+                    <td style="border:none !important; text-align: center;">
+                        <p>Ngày..... tháng..... năm 2026</p>
+                        <p style="font-weight: bold; margin-bottom: 55px;">Người lập biểu<br><small>(Sinh viên ký và ghi rõ họ tên)</small></p>
+                        <p style="font-weight: bold; font-style: normal; color: var(--primary-hover);" id="taxStudentSignature">.......................................</p>
+                    </td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="software-footer">
+            Phần mềm do GV Nguyễn Khánh Dương phát triển - Phục vụ giảng dạy & học tập
+        </div>
+    </div>
+
+    <script>
+        let productsDatabase = [];
+        let calculatedTaxesArray = []; 
+
+        function toggleCoTypeView() {
+            let coFormValue = document.getElementById('coForm').value;
+            let coTypeGroup = document.getElementById('coTypeGroup');
+            if (coFormValue === 'Có Form C/O') {
+                coTypeGroup.style.display = 'flex';
+            } else {
+                coTypeGroup.style.display = 'none';
+            }
+        }
+        toggleCoTypeView();
+
+        function openTab(evt, tabName) {
+            let i, tabcontent, tablinks;
+            tabcontent = document.getElementsByClassName("tab-content");
+            for (i = 0; i < tabcontent.length; i++) {
+                tabcontent[i].classList.remove("active");
+                tabcontent[i].classList.remove("print-active-section");
+            }
+            tablinks = document.getElementsByClassName("tab-button");
+            for (i = 0; i < tablinks.length; i++) {
+                tablinks[i].classList.remove("active");
+            }
+            
+            let targetContent = document.getElementById(tabName);
+            targetContent.classList.add("active");
+            targetContent.classList.add("print-active-section"); 
+            
+            if(evt) {
+                evt.currentTarget.classList.add("active");
+            } else {
+                if(tabName === 'tab2') document.getElementById('btnTab2').classList.add("active");
+                if(tabName === 'tab3') document.getElementById('btnTab3').classList.add("active");
+            }
+        }
+
+        function openExcel() {
+            let link = document.getElementById('excelLink').value.trim();
+            if(link) { window.open(link, '_blank'); } 
+            else { alert("Vui lòng dán liên kết file Google Drive vào ô trống trước."); }
+        }
+
+        function addDataRow() {
+            let form = document.getElementById('logisticsForm');
+            if(!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+
+            let coFormValue = document.getElementById('coForm').value;
+            let finalCoFormText = coFormValue;
+            if(coFormValue === 'Có Form C/O') {
+                finalCoFormText = `Có Form C/O (${document.getElementById('coType').value})`;
+            }
+
+            let item = {
+                svName: document.getElementById('svName').value,
+                svId: document.getElementById('svId').value,
+                prodInter: document.getElementById('prodInter').value || "-",
+                prodVN: document.getElementById('prodVN').value,
+                origin: document.getElementById('origin').value || "-",
+                hsCode: document.getElementById('hsCode').value,
+                coForm: finalCoFormText,
+                inspection: document.getElementById('inspection').value,
+                taxNK: parseFloat(document.getElementById('taxNK').value) || 0,
+                taxTTDB: parseFloat(document.getElementById('taxTTDB').value) || 0,
+                taxBVMT: parseFloat(document.getElementById('taxBVMT').value) || 0,
+                taxGTGT_NK: parseFloat(document.getElementById('taxGTGT_NK').value) || 0,
+                taxKhac: parseFloat(document.getElementById('taxKhac').value) || 0,
+                taxXK: parseFloat(document.getElementById('taxXK').value) || 0,
+                taxGTGT_XK: parseFloat(document.getElementById('taxGTGT_XK').value) || 0
+            };
+
+            productsDatabase.push(item);
+            renderTab1Table();
+
+            document.getElementById('prodInter').value = '';
+            document.getElementById('prodVN').value = '';
+            document.getElementById('origin').value = '';
+            document.getElementById('hsCode').value = '';
+            document.getElementById('taxNK').value = 0;
+            document.getElementById('taxTTDB').value = 0;
+            document.getElementById('taxBVMT').value = 0;
+            document.getElementById('taxGTGT_NK').value = 0;
+            document.getElementById('taxKhac').value = 0;
+            document.getElementById('taxXK').value = 0;
+            document.getElementById('taxGTGT_XK').value = 0;
+            
+            alert("Ghi nhận thông tin hàng hóa thành công!");
+        }
+
+        function renderTab1Table() {
+            let tbody = document.querySelector('#tab1Table tbody');
+            tbody.innerHTML = '';
+
+            productsDatabase.forEach((item, index) => {
+                let row = `<tr>
+                    <td>${index + 1}</td>
+                    <td><b>${item.svName}</b></td>
+                    <td>${item.svId}</td>
+                    <td>${item.prodInter}</td>
+                    <td><b>${item.prodVN}</b></td>
+                    <td>${item.origin}</td>
+                    <td><span style="color:#2980b9; font-weight:bold;">${item.hsCode}</span></td>
+                    <td>${item.coForm}</td>
+                    <td class="tax-cell">${item.taxNK}%</td>
+                    <td class="tax-cell">${item.taxTTDB}%</td>
+                    <td class="tax-cell">${item.taxBVMT}đ</td>
+                    <td class="tax-cell">${item.taxGTGT_NK}%</td>
+                    <td class="tax-cell">${item.taxXK}%</td>
+                    <td class="tax-cell">${item.taxGTGT_XK}%</td>
+                    <td class="tax-cell">${item.taxKhac}%</td>
+                    <td>${item.inspection}</td>
+                    <td class="no-print" style="white-space: nowrap;">
+                        <button class="btn btn-print" type="button" style="margin-right: 5px;" onclick="printSingleProduct(${index})">In chi tiết</button>
+                        <button class="btn btn-danger" type="button" onclick="deleteDataRow(${index})">Xóa</button>
+                    </td>
+                </tr>`;
+                tbody.innerHTML += row;
+            });
+        }
+
+        function deleteDataRow(index) {
+            if(confirm("Bạn có chắc chắn muốn xóa sản phẩm này không?")) {
+                productsDatabase.splice(index, 1);
+                renderTab1Table();
+                
+                if (document.getElementById('tab2').classList.contains('active')) {
+                    generateReport();
+                } else if (document.getElementById('tab3').classList.contains('active')) {
+                    goToTaxTab();
+                }
+            }
+        }
+
+        function generateReport() {
+            if(productsDatabase.length === 0) {
+                alert("Chưa có dữ liệu hàng hóa nào được ghi nhận. Vui lòng nhập liệu ở Tab 1 trước!");
+                document.querySelector('#tab2Table tbody').innerHTML = '';
+                return;
+            }
+
+            let tbody = document.querySelector('#tab2Table tbody');
+            tbody.innerHTML = '';
+
+            productsDatabase.forEach((item, index) => {
+                let row = `<tr>
+                    <td>${index + 1}</td>
+                    <td>${item.svName}</td>
+                    <td>${item.svId}</td>
+                    <td>${item.prodInter}</td>
+                    <td><b>${item.prodVN}</b></td>
+                    <td>${item.origin}</td>
+                    <td><b style="color:#2980b9;">${item.hsCode}</b></td>
+                    <td>${item.coForm}</td>
+                    <td class="tax-cell">${item.taxNK}%</td>
+                    <td class="tax-cell">${item.taxTTDB}%</td>
+                    <td class="tax-cell">${item.taxBVMT}đ</td>
+                    <td class="tax-cell">${item.taxGTGT_NK}%</td>
+                    <td class="tax-cell">${item.taxXK}%</td>
+                    <td class="tax-cell">${item.taxGTGT_XK}%</td>
+                    <td class="tax-cell">${item.taxKhac}%</td>
+                    <td>${item.inspection}</td>
+                </tr>`;
+                tbody.innerHTML += row;
+            });
+
+            let topStudent = productsDatabase[0];
+            document.getElementById('reportStudentMeta').innerText = `Sinh viên thực hiện: ${topStudent.svName} (MSSV: ${topStudent.svId})`;
+            document.getElementById('reportStudentSignature').innerText = topStudent.svName;
+
+            openTab(null, 'tab2');
+        }
+
+        function goToTaxTab() {
+            if(productsDatabase.length === 0) {
+                alert("Chưa có dữ liệu hàng hóa nào để tiến hành tính thuế!");
+                document.querySelector('#tab3Table tbody').innerHTML = '';
+                sumUpGlobalTaxes();
+                return;
+            }
+
+            let tbody = document.querySelector('#tab3Table tbody');
+            tbody.innerHTML = '';
+            calculatedTaxesArray = []; 
+
+            productsDatabase.forEach((item, index) => {
+                calculatedTaxesArray.push({ nk: 0, ttdb: 0, bvmt: 0, gtgt: 0, xk: 0 });
+
+                let row = `<tr>
+                    <td>${index + 1}</td>
+                    <td><b>${item.prodVN}</b></td>
+                    <td><span style="color:#2980b9; font-weight:bold;">${item.hsCode}</span></td>
+                    <td><small>${item.coForm}</small></td>
+                    <td>
+                        <select id="tradeType_${index}" onchange="updateTaxRatesDisplay(${index})" style="width:100%; padding:5px;">
+                            <option value="import">Nhập khẩu</option>
+                            <option value="export">Xuất khẩu</option>
+                        </select>
+                    </td>
+                    <td><input type="number" id="qty_${index}" class="input-table" value="1000" min="0" onchange="autoRecalc(${index})"></td>
+                    <td><input type="number" id="price_${index}" class="input-table" value="15" min="0" onchange="autoRecalc(${index})"></td>
+                    <td>
+                        <select id="currency_${index}" style="padding:4px; width:100%;">
+                            <option value="USD">USD</option>
+                            <option value="VND">VND</option>
+                            <option value="EUR">EUR</option>
+                        </select>
+                    </td>
+                    <td><input type="number" id="rate_${index}" class="input-table" value="25000" min="1" onchange="autoRecalc(${index})"></td>
+                    <td>
+                        <div id="rateDisplay_${index}" style="font-size:11px; line-height:1.4; color:#555; text-align: left; padding-left: 5px;"></div>
+                    </td>
+                    <td>
+                        <div id="taxResult_${index}" style="font-size:11px; line-height:1.4; font-weight:bold; color:#2c3e50; text-align: left; padding-left: 5px;">Chưa tính</div>
+                    </td>
+                    <td class="no-print">
+                        <button class="btn" style="background-color:var(--primary-color); color:white; padding:5px 8px; font-size:12px; margin:0;" onclick="calculateRowTax(${index})">Tính toán</button>
+                    </td>
+                </tr>`;
+                tbody.innerHTML += row;
+                updateTaxRatesDisplay(index);
+            });
+
+            let topStudent = productsDatabase[0];
+            document.getElementById('taxStudentMeta').innerText = `Sinh viên thực hiện: ${topStudent.svName} (MSSV: ${topStudent.svId})`;
+            document.getElementById('taxStudentSignature').innerText = topStudent.svName;
+
+            openTab(null, 'tab3');
+            calculateAllRows(); 
+        }
+
+        function updateTaxRatesDisplay(index) {
+            let item = productsDatabase[index];
+            let type = document.getElementById(`tradeType_${index}`).value;
+            let displayDiv = document.getElementById(`rateDisplay_${index}`);
+
+            if(type === 'import') {
+                displayDiv.innerHTML = `
+                    • NK: <b>${item.taxNK}%</b><br>
+                    • TTĐB: <b>${item.taxTTDB}%</b><br>
+                    • BVMT: <b>${item.taxBVMT}đ</b><br>
+                    • GTGT: <b>${item.taxGTGT_NK}%</b>
+                `;
+            } else {
+                displayDiv.innerHTML = `
+                    • XK: <b>${item.taxXK}%</b><br>
+                    • GTGT: <b>${item.taxGTGT_XK}%</b>
+                `;
+            }
+            autoRecalc(index);
+        }
+
+        function autoRecalc(index) {
+            document.getElementById(`taxResult_${index}`).innerHTML = `<span style="color:#7f8c8d; font-weight:normal; font-style:italic;">Chờ tính...</span>`;
+        }
+
+        function calculateRowTax(index) {
+            let item = productsDatabase[index];
+            let type = document.getElementById(`tradeType_${index}`).value;
+            let qty = parseFloat(document.getElementById(`qty_${index}`).value) || 0;
+            let price = parseFloat(document.getElementById(`price_${index}`).value) || 0;
+            let rate = parseFloat(document.getElementById(`rate_${index}`).value) || 1;
+
+            let baseValue = qty * price * rate; 
+            let resultDiv = document.getElementById(`taxResult_${index}`);
+
+            if(type === 'import') {
+                let thueNK = baseValue * (item.taxNK / 100);
+                let thueTTDB = (baseValue + thueNK) * (item.taxTTDB / 100);
+                let thueBVMT = qty * item.taxBVMT;
+                let thueGTGT = (baseValue + thueNK + thueTTDB) * (item.taxGTGT_NK / 100);
+                let thueKhac = baseValue * (item.taxKhac / 100);
+                let totalRow = thueNK + thueTTDB + thueBVMT + thueGTGT + thueKhac;
+
+                calculatedTaxesArray[index] = { nk: thueNK, ttdb: thueTTDB, bvmt: thueBVMT, gtgt: thueGTGT, xk: 0 };
+
+                resultDiv.innerHTML = `
+                    <div style="text-align: left; padding-left: 5px;">
+                        <span>• NK: ${Math.round(thueNK).toLocaleString()} đ</span><br>
+                        <span>• TTĐB: ${Math.round(thueTTDB).toLocaleString()} đ</span><br>
+                        <span>• BVMT: ${Math.round(thueBVMT).toLocaleString()} đ</span><br>
+                        <span>• GTGT: ${Math.round(thueGTGT).toLocaleString()} đ</span><br>
+                        <div style="border-top:1px solid #ccc; margin-top:2px; font-weight:bold;">TC: ${Math.round(totalRow).toLocaleString()} đ</div>
+                    </div>
+                `;
+            } else {
+                let thueXK = baseValue * (item.taxXK / 100);
+                let thueGTGT_XK = (baseValue + thueXK) * (item.taxGTGT_XK / 100);
+                let totalRow = thueXK + thueGTGT_XK;
+
+                calculatedTaxesArray[index] = { nk: 0, ttdb: 0, bvmt: 0, gtgt: 0, xk: thueXK };
+
+                resultDiv.innerHTML = `
+                    <div style="text-align: left; padding-left: 5px;">
+                        <span>• XK: ${Math.round(thueXK).toLocaleString()} đ</span><br>
+                        <span>• GTGT: ${Math.round(thueGTGT_XK).toLocaleString()} đ</span><br>
+                        <div style="border-top:1px solid #ccc; margin-top:2px; font-weight:bold;">TC: ${Math.round(totalRow).toLocaleString()} đ</div>
+                    </div>
+                `;
+            }
+
+            sumUpGlobalTaxes(); 
+        }
+
+        function calculateAllRows() {
+            productsDatabase.forEach((_, idx) => calculateRowTax(idx));
+        }
+
+        function sumUpGlobalTaxes() {
+            let totalNK = 0, totalTTDB = 0, totalBVMT = 0, totalGTGT = 0, totalXK = 0;
+
+            calculatedTaxesArray.forEach(row => {
+                totalNK += row.nk;
+                totalTTDB += row.ttdb;
+                totalBVMT += row.bvmt;
+                totalGTGT += row.gtgt;
+                totalXK += row.xk;
+            });
+
+            let finalSum = totalNK + totalTTDB + totalBVMT + totalGTGT + totalXK;
+
+            document.getElementById('sumNK').innerText = Math.round(totalNK).toLocaleString();
+            document.getElementById('sumTTDB').innerText = Math.round(totalTTDB).toLocaleString();
+            document.getElementById('sumBVMT').innerText = Math.round(totalBVMT).toLocaleString();
+            document.getElementById('sumGTGT').innerText = Math.round(totalGTGT).toLocaleString();
+            document.getElementById('sumXK').innerText = Math.round(totalXK).toLocaleString();
+            document.getElementById('sumTotal').innerText = Math.round(finalSum).toLocaleString();
+        }
+
+        function printSingleProduct(index) {
+            let item = productsDatabase[index];
+            let printWindow = window.open('', '_blank');
+            if(!printWindow) {
+                alert("Trình duyệt chặn Pop-up. Vui lòng bật quyền hiển thị cửa sổ để tiến hành in ấn.");
+                return;
+            }
+            
+            let htmlContent = `
+                <html>
+                <head>
+                    <title>Chi tiết sản phẩm - ${item.hsCode}</title>
+                    <style>
+                        @page { size: A4 portrait; margin: 15mm; }
+                        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; line-height: 1.4; color: #2c3e50; margin: 0; padding: 0; font-size: 13px; text-align: center; }
+                        .header { text-align: center; margin-bottom: 15px; border-bottom: 2px double #3498db; padding-bottom: 5px; }
+                        .header h2 { color: #2980b9; margin: 0 0 5px 0; font-size: 18px; text-transform: uppercase; }
+                        .section-title { font-weight: bold; background: #3498db; color: white; padding: 5px 10px; margin-top: 15px; text-transform: uppercase; border-radius: 3px; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+                        table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+                        table, th, td { border: 1px solid #bcdff5; }
+                        th, td { padding: 8px 12px; text-align: center; }
+                        th { width: 40%; background-color: #f0f7fc; font-weight: bold; color: #2980b9; }
+                        @media print {
+                            th { background-color: #f0f7fc !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+                            .section-title { background: #3498db !important; color: white !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="header">
+                        <h2>PHIẾU KHAI BÁO CHI TIẾT MÃ HS CODE VÀ THUẾ SUẤT</h2>
+                    </div>
+                    <div class="section-title">I. Thông tin sinh viên</div>
+                    <table>
+                        <tr><th>Họ và tên sinh viên:</th><td>${item.svName}</td></tr>
+                        <tr><th>Mã số sinh viên:</th><td><b>${item.svId}</b></td></tr>
+                    </table>
+                    <div class="section-title">II. Chi tiết thông tin hàng hóa</div>
+                    <table>
+                        <tr><th>Tên sản phẩm:</th><td><b>${item.prodVN}</b></td></tr>
+                        <tr><th>Mã HS Code áp dụng:</th><td><b style="color:#2980b9;">${item.hsCode}</b></td></tr>
+                        <tr><th>Hình thức Form C/O:</th><td>${item.coForm}</td></tr>
+                        <tr><th>Kiểm tra chuyên ngành:</th><td>${item.inspection}</td></tr>
+                    </table>
+                    <div class="section-title">III. Biểu thuế suất áp dụng chi tiết</div>
+                    <table>
+                        <tr><th>Thuếu nhập khẩu (NK):</th><td>${item.taxNK}%</td></tr>
+                        <tr><th>Thuế tiêu thụ đặc biệt (TTBĐ):</th><td>${item.taxTTDB}%</td></tr>
+                        <tr><th>Thuế bảo vệ môi trường (BVMT):</th><td>${item.taxBVMT.toLocaleString()} đ/ĐV</td></tr>
+                        <tr><th>Thuế giá trị gia tăng (GTGT):</th><td>${item.taxGTGT_NK}%</td></tr>
+                        <tr><th>Thuế xuất khẩu (XK):</th><td>${item.taxXK}%</td></tr>
+                    </table>
+                    <div style="margin-top: 40px; text-align: right;">
+                        <p>Ngày..... tháng..... năm 2026</p>
+                        <p style="font-weight: bold; margin-bottom: 50px;">Sinh viên thực hiện ký tên</p>
+                        <p style="font-weight: bold; color: #2980b9;">${item.svName}</p>
+                    </div>
+                    <script>window.onload = function() { window.print(); window.close(); }<\/script>
+                </body>
+                </html>
+            `;
+            printWindow.document.write(htmlContent);
+            printWindow.document.close();
+        }
+
+        function printFullReport() {
+            if (productsDatabase.length === 0) {
+                alert("Không có dữ liệu để lập báo cáo và in!");
+                return;
+            }
+            openTab(null, 'tab2');
+            window.print();
+        }
+
+        function printTaxTable() {
+            if (productsDatabase.length === 0) {
+                alert("Không có dữ liệu bảng tính toán thuế để tiến hành in!");
+                return;
+            }
+            calculateAllRows();
+            openTab(null, 'tab3');
+            window.print();
+        }
+    </script>
+</body>
+</html>
